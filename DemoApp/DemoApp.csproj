@@ -7,8 +7,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Reodor.AppSettingsSourceGenerator\Reodor.AppSettingsSourceGenerator.csproj" OutputItemType="Analyzer"
-						ReferenceOutputAssembly="false"/>
+		<ProjectReference Include="..\Reodor.AppSettingsSourceGenerator\Reodor.AppSettingsSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
+
+	<ItemGroup>
+		<AdditionalFiles Include="appsettings.json"/>
+	</ItemGroup>
 </Project>
