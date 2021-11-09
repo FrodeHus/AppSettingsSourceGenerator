@@ -13,7 +13,7 @@
 		<PackageTags>dotnet</PackageTags>
 		<DebugSymbols>true</DebugSymbols>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+		<CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
 		<Copyright>Copyright 2021 - Frode Hus</Copyright>
 	</PropertyGroup>
 

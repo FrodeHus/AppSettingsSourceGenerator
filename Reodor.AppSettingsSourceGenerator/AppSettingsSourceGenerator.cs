@@ -13,7 +13,6 @@ public class AppSettingsSourceGenerator : ISourceGenerator
     {
         var builder = new StringBuilder();
         builder.Append(@"
-#nullable enable
 using System;
 namespace AppSettings;
 

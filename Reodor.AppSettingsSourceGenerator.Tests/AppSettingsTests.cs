@@ -50,7 +50,6 @@ namespace Reodor.AppSettingsSourceGenerator.Tests
 }
 ";
             var expected = @"
-#nullable enable
 using System;
 namespace AppSettings;
 
