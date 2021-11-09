@@ -4,6 +4,17 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Authors>frodehus</Authors>
+		<Version>0.2.1</Version>
+		<Description>Source generator for creating C# records based on the appsettings.json found in the project.</Description>
+		<PackageProjectUrl>https://github.com/FrodeHus/AppSettingsSourceGenerator</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/FrodeHus/AppSettingsSourceGenerator</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageTags>dotnet</PackageTags>
+		<DebugSymbols>true</DebugSymbols>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+		<Copyright>Copyright 2021 - Frode Hus</Copyright>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,5 +25,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
 	</ItemGroup>
-
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
 </Project>
