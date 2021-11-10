@@ -1,7 +1,7 @@
 using FluentAssertions;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Xunit;
 
 namespace Reodor.AppSettingsSourceGenerator.Tests
@@ -18,7 +18,7 @@ namespace Reodor.AppSettingsSourceGenerator.Tests
   }
 }
 ";
-            var values = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+            var values = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
 
             var classNames = AppSettingsSourceGenerator.ExtractTopLevelPropertyNames(values);
             classNames.Should().HaveCount(1);
@@ -51,14 +51,15 @@ namespace Reodor.AppSettingsSourceGenerator.Tests
 ";
             var expected = @"
 using System;
-namespace AppSettings;
-
-public record MySettings
+namespace AppSettings
 {
-    public string Url { get; init; }
-}
-";
-            var values = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+    public record MySettings
+{
+        public string Url { get; init; }
+    }
+}";
+            var values = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
 
             var source = AppSettingsSourceGenerator.GenerateRecordSource("MySettings", values);
             source.Should().Be(expected.Trim());
