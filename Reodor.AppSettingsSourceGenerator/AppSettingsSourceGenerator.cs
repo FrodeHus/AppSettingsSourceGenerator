@@ -121,10 +121,12 @@ namespace {nameSpace}.AppSettings
                         var simpleProperties = new Dictionary<string, object>();
                         if (mergedAppsettings.ContainsKey(propertyName))
                         {
-                            simpleProperties = mergedAppsettings[propertyName] as Dictionary<string, object>;
+                            var serialized = (JsonElement)mergedAppsettings[propertyName];
+                            simpleProperties = serialized.Deserialize<Dictionary<string, object>>();
                         }
                         simpleProperties[kvp.Key] = value;
-                        mergedAppsettings[propertyName] = simpleProperties;
+                        var serializedDict = JsonSerializer.SerializeToElement(simpleProperties);
+                        mergedAppsettings[propertyName] = serializedDict;
 
                     }
                     else

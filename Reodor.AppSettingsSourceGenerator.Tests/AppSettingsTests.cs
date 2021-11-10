@@ -122,5 +122,42 @@ namespace TestProject.AppSettings
 
             await test.RunAsync();
         }
+
+        [Fact]
+        public async Task It_Can_Collect_Simple_Settings_Into_One_SimpleSettings_Class()
+        {
+            var json = @"
+{
+  ""EnableDebug"": true
+}
+";
+
+            var expected = @"#nullable enable
+using System;
+namespace TestProject.AppSettings
+{
+
+    public partial class SimpleSettings
+    {
+        public string EnableDebug { get; set; } = default!;
+    }
+}";
+
+            var test = new CSharpSourceGeneratorVerifier<AppSettingsSourceGenerator>.Test
+            {
+                TestState =
+                {
+                    GeneratedSources =
+                    {
+                        (typeof(AppSettingsSourceGenerator), "SimpleSettings.cs", SourceText.From(expected, Encoding.UTF8)),
+                    }
+                },
+
+            };
+
+            test.TestState.AdditionalFiles.Add(("appsettings.json", json));
+
+            await test.RunAsync();
+        }
     }
 }
