@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+#if DEBUG
+using System.Diagnostics;
+#endif
 
 namespace Reodor.AppSettingsSourceGenerator
 {
@@ -42,7 +45,7 @@ namespace {nameSpace}.AppSettings
             switch (propValues.ValueKind)
             {
                 case JsonValueKind.Object:
-                    builder.Append(GeneratePropertiesFromDict(JsonSerializer.Deserialize<Dictionary<string, object>>(propValues)));
+                    builder.Append(GeneratePropertiesFromDict(propValues.Deserialize<Dictionary<string, object>>(), 8));
                     break;
             }
 
@@ -51,13 +54,20 @@ namespace {nameSpace}.AppSettings
             return builder.ToString().Trim();
         }
 
-        internal static string GeneratePropertiesFromDict(Dictionary<string, object> values)
+        internal static string GeneratePropertiesFromDict(Dictionary<string, object> values, int indentationLevel = 0)
         {
             var builder = new StringBuilder();
             foreach (var kvp in values)
             {
-                var declaration = GetPropertyTypeAndName(kvp.Key, kvp.Value);
-                builder.Append("        public ").Append(declaration).AppendLine(" { get; set; } = default!;");
+                var valueType = GetValueType(kvp.Value);
+                var propertyName = StringToValidTypeName(kvp.Key);
+                var indent = Enumerable.Repeat(' ', indentationLevel);
+                builder.Append(indent.ToArray())
+                    .Append("public ")
+                    .Append(valueType)
+                    .Append(' ')
+                    .Append(propertyName)
+                    .AppendLine(" { get; set; } = default!;");
             }
             return builder.ToString();
         }
@@ -73,27 +83,15 @@ namespace {nameSpace}.AppSettings
             return values.Select(x => StringToValidTypeName(x.Key.Trim())).ToList();
         }
 
-
-        internal static string GetPropertyTypeAndName(string fieldName, object fieldValue)
+        internal static string GetValueType(object fieldValue) => fieldValue switch
         {
-            var typeName = "string";
-            switch (fieldValue)
-            {
-                case Boolean _:
-                    typeName = "bool";
-                    break;
-                case int _:
-                    typeName = "int";
-                    break;
-                case double _:
-                    typeName = "double";
-                    break;
-                case float _:
-                    typeName = "float";
-                    break;
-            };
-            return $"{typeName} {fieldName}";
-        }
+            bool _ => "bool",
+            int _ => "int",
+            double _ => "double",
+            float _ => "float",
+            _ => "string"
+        };
+
 
         public void Execute(GeneratorExecutionContext context)
         {

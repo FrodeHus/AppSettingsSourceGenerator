@@ -32,11 +32,10 @@ namespace Reodor.AppSettingsSourceGenerator.Tests
         [InlineData(int.MaxValue, "int")]
         [InlineData(double.MaxValue, "double")]
         [InlineData(float.MaxValue, "float")]
-        public void It_Can_Create_Property_With_Proper_Type(object fieldValue, string expectedType)
+        public void It_Can_Determine_Proper_Value_Type(object fieldValue, string expectedType)
         {
-            var expected = $"{expectedType} Prop";
-            var actual = AppSettingsSourceGenerator.GetPropertyTypeAndName("Prop", fieldValue);
-            actual.Should().Be(expected);
+            var actual = AppSettingsSourceGenerator.GetValueType(fieldValue);
+            actual.Should().Be(expectedType);
         }
 
         [Fact]
@@ -64,6 +63,21 @@ namespace Test.AppSettings
 
             var source = AppSettingsSourceGenerator.GenerateAppSettingSource("MySettings", values, "Test");
             source.Should().Be(expected.Trim());
+        }
+
+        [Theory]
+        [InlineData("Title", "asdf", "string")]
+        [InlineData("Exists", true, "bool")]
+        [InlineData("Count", 1, "int")]
+        public void It_Can_Generate_Properties(string propertyName, object propertyValue, string valueType)
+        {
+            var expected = $"public {valueType} {propertyName} {{ get; set; }} = default!;";
+            var dict = new Dictionary<string, object>
+            {
+                {propertyName, propertyValue}
+            };
+            var actual = AppSettingsSourceGenerator.GeneratePropertiesFromDict(dict).Trim();
+            actual.Should().Be(expected);
         }
     }
 }
