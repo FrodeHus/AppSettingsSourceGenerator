@@ -1,13 +1,17 @@
 using FluentAssertions;
+using Microsoft.CodeAnalysis.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Reodor.AppSettingsSourceGenerator.Tests
 {
     public class AppSettingsTests
     {
+
         [Fact]
         public void It_Can_Extract_Classnames_Based_On_Property_Names()
         {
@@ -78,6 +82,45 @@ namespace Test.AppSettings
             };
             var actual = AppSettingsSourceGenerator.GeneratePropertiesFromDict(dict).Trim();
             actual.Should().Be(expected);
+        }
+
+        [Fact]
+        public async Task It_Can_Generate_Source_Files_From_AppSettings()
+        {
+            var json = @"
+{
+  ""MySettings"": {
+    ""Url"": ""https://api.dockergen.frodehus.dev/""
+  }
+}
+";
+
+            var expected = @"#nullable enable
+using System;
+namespace TestProject.AppSettings
+{
+
+    public partial class MySettings
+    {
+        public string Url { get; set; } = default!;
+    }
+}";
+
+            var test = new CSharpSourceGeneratorVerifier<AppSettingsSourceGenerator>.Test
+            {
+                TestState =
+                {
+                    GeneratedSources =
+                    {
+                        (typeof(AppSettingsSourceGenerator), "MySettings.cs", SourceText.From(expected, Encoding.UTF8)),
+                    }
+                },
+
+            };
+
+            test.TestState.AdditionalFiles.Add(("appsettings.json", json));
+
+            await test.RunAsync();
         }
     }
 }

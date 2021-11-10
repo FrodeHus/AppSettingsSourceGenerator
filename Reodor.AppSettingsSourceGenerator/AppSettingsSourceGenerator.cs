@@ -1,8 +1,4 @@
-﻿#if DEBUG
-using System.Diagnostics;
-#endif
-
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
@@ -151,12 +147,6 @@ namespace {nameSpace}.AppSettings
 
         public void Initialize(GeneratorInitializationContext context)
         {
-#if DEBUG
-            if (!Debugger.IsAttached)
-            {
-                Debugger.Launch();
-            }
-#endif
         }
     }
 }
