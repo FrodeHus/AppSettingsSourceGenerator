@@ -1,4 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
+﻿#if DEBUG
+using System.Diagnostics;
+#endif
+
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
@@ -6,9 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-#if DEBUG
-using System.Diagnostics;
-#endif
 
 namespace Reodor.AppSettingsSourceGenerator
 {
@@ -30,8 +31,7 @@ namespace {nameSpace}.AppSettings
             builder
                 .Append("    public partial class ")
                 .AppendLine(className)
-                .Append("    {")
-                .AppendLine();
+                .AppendLine("    {");
             if (values[className] == null)
             {
                 throw new ArgumentException($"No values found in given dictionary for {className}", nameof(values));
@@ -74,7 +74,6 @@ namespace {nameSpace}.AppSettings
 
         internal static List<string> ExtractTopLevelPropertyNames(Dictionary<string, object> values)
         {
-
             if (values == null)
             {
                 return new List<string>();
@@ -95,33 +94,50 @@ namespace {nameSpace}.AppSettings
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var addedSources = new List<string>();
-            foreach (var file in context.AdditionalFiles)
+            var appsettingFiles = context.AdditionalFiles.Where(f => Path.GetFileNameWithoutExtension(f.Path).StartsWith("appsettings", StringComparison.OrdinalIgnoreCase));
+            var values = MergeAppSettings(appsettingFiles);
+            foreach (var className in ExtractTopLevelPropertyNames(values))
             {
-                if (!Path.GetExtension(file.Path).Equals(".json", StringComparison.OrdinalIgnoreCase))
+                var source = GenerateAppSettingSource(className, values, context.Compilation.AssemblyName);
+                if (source == null)
                 {
                     continue;
                 }
+
+                context.AddSource(className, SourceText.From(source, Encoding.UTF8));
+            }
+        }
+
+        private Dictionary<string, object> MergeAppSettings(IEnumerable<AdditionalText> appsettingFiles)
+        {
+            var mergedAppsettings = new Dictionary<string, object>();
+            foreach (var file in appsettingFiles)
+            {
                 var json = file.GetText()?.ToString();
-                var values = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-                if (values == null)
+                var values = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+                foreach (var kvp in values)
                 {
-                    continue;
-                }
-
-
-                foreach (var className in ExtractTopLevelPropertyNames(values))
-                {
-                    if (addedSources.Contains(className)) continue;
-                    var source = GenerateAppSettingSource(className, values, context.Compilation.AssemblyName);
-                    if (source == null)
+                    var value = kvp.Value;
+                    var propertyName = kvp.Key;
+                    if (value.ValueKind != JsonValueKind.Object)
                     {
-                        continue;
+                        propertyName = "SimpleSettings";
+                        var simpleProperties = new Dictionary<string, object>();
+                        if (mergedAppsettings.ContainsKey(propertyName))
+                        {
+                            simpleProperties = mergedAppsettings[propertyName] as Dictionary<string, object>;
+                        }
+                        simpleProperties[kvp.Key] = value;
+                        mergedAppsettings[propertyName] = simpleProperties;
+
                     }
-                    context.AddSource(className, SourceText.From(source, Encoding.UTF8));
-                    addedSources.Add(className);
+                    else
+                    {
+                        mergedAppsettings[propertyName] = value;
+                    }
                 }
             }
+            return mergedAppsettings;
         }
 
         internal static string StringToValidTypeName(string s)
