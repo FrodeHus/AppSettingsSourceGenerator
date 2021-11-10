@@ -76,9 +76,10 @@ namespace Test.AppSettings
         public void It_Can_Generate_Properties(string propertyName, object propertyValue, string valueType)
         {
             var expected = $"public {valueType} {propertyName} {{ get; set; }} = default!;";
+            var serializedValue = JsonSerializer.SerializeToElement(propertyValue);
             var dict = new Dictionary<string, object>
             {
-                {propertyName, propertyValue}
+                {propertyName, serializedValue}
             };
             var actual = AppSettingsSourceGenerator.GeneratePropertiesFromDict(dict).Trim();
             actual.Should().Be(expected);
@@ -139,7 +140,7 @@ namespace TestProject.AppSettings
 
     public partial class SimpleSettings
     {
-        public string EnableDebug { get; set; } = default!;
+        public bool EnableDebug { get; set; } = default!;
     }
 }";
 

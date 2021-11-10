@@ -84,6 +84,14 @@ namespace {nameSpace}.AppSettings
             int _ => "int",
             double _ => "double",
             float _ => "float",
+            JsonElement e => e.ValueKind switch
+            {
+                JsonValueKind.String => "string",
+                JsonValueKind.Number => "int",
+                JsonValueKind.True => "bool",
+                JsonValueKind.False => "bool",
+                _ => "object"
+            },
             _ => "string"
         };
 
