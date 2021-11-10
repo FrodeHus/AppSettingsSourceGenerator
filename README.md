@@ -1,6 +1,8 @@
 # AppSettingsSourceGenerator
 Source generator that turns appsettings.json into ready to be used classes for dependency injection.
 
+> There is a NuGet-package for this and ideally all you would have to do is to add that to your project and it would automatically detect your `appsettings.json` and generate the files. However, there is a bug with third party dependencies that I haven't figured out yet so it doesn't work right now.
+
 ## How it works
 
 Given an `appsettings.json` such as 
