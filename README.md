@@ -6,6 +6,8 @@ Source generator that turns appsettings.json into ready to be used classes for d
 Use this [NuGet package](https://www.nuget.org/packages/Reodor.AppSettingsSourceGenerator/).
 Install using, for example, `dotnet add package Reodor.AppSettingsSourceGenerator --version 1.0.0`
 
+Because of how source generators work in Visual Studio currently, you may have to restart Visual Studio after you first install the package in your project.
+
 _Note_  
 Due to how analyzers need to be packaged when referencing external NuGet packages, your analyzer list in Visual Studio may appear cluttered with other libraries than just analyzers.
 For now, this is the only way to make this work.
@@ -30,7 +32,7 @@ Given an `appsettings.json` such as
 }
 ```
 
-the source generator will create three classes:
+the source generator will create three classes when you build your project:
 
 - `<YourTopNamespace>.AppSettings.Logging`
 - `<YourTopNamespace>.AppSettings.MySettings`
