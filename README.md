@@ -27,6 +27,22 @@ the source generator will create three classes:
 - `<YourTopNamespace>.AppSettings.MySettings`
 - `<YourTopNamespace>.AppSettings.SimpleSettings`
 
+The resulting code looks like this (using `MySettings` from the above `appsettings.json` as an example)
+```csharp
+#nullable enable
+using System;
+namespace DemoApp.AppSettings
+{
+
+    public partial class MySettings
+    {
+        public string Test { get; set; } = default!;
+        public int Value { get; set; } = default!;
+        public bool Exists { get; set; } = default!;
+    }
+}
+```
+
 The `SimpleSettings` class is a special one as it contains all simple valued settings such as `"AllowedHosts": "*"`.
 
 You can then add these to dependency injection like this:
