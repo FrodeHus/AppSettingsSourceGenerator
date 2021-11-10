@@ -1,14 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-
+using System.Text.Json;
 
 namespace Reodor.AppSettingsSourceGenerator
 {
@@ -17,34 +14,35 @@ namespace Reodor.AppSettingsSourceGenerator
     public class AppSettingsSourceGenerator : ISourceGenerator
     {
 
-        internal static string GenerateRecordSource(string recordName, Dictionary<string, object> values)
+        internal static string GenerateAppSettingSource(string className, Dictionary<string, object> values, string nameSpace)
         {
             var builder = new StringBuilder();
-            builder.Append(@"
+            builder.Append(@$"
+#nullable enable
 using System;
-namespace AppSettings
-{
+namespace {nameSpace}.AppSettings
+{{
 
 ");
             builder
-                .Append("    public record ")
-                .AppendLine(recordName)
-                .Append('{')
+                .Append("    public partial class ")
+                .AppendLine(className)
+                .Append("    {")
                 .AppendLine();
-            if (values[recordName] == null)
+            if (values[className] == null)
             {
-                throw new ArgumentException($"No values found in given dictionary for {recordName}", nameof(values));
+                throw new ArgumentException($"No values found in given dictionary for {className}", nameof(values));
             }
 
-            if (values[recordName] is not JObject propValues)
+            if (values[className] is not JsonElement propValues)
             {
                 return null;
             }
 
-            switch (propValues.Type)
+            switch (propValues.ValueKind)
             {
-                case JTokenType.Object:
-                    builder.Append(GeneratePropertiesFromDict(propValues.ToObject<Dictionary<string, object>>()));
+                case JsonValueKind.Object:
+                    builder.Append(GeneratePropertiesFromDict(JsonSerializer.Deserialize<Dictionary<string, object>>(propValues)));
                     break;
             }
 
@@ -59,7 +57,7 @@ namespace AppSettings
             foreach (var kvp in values)
             {
                 var declaration = GetPropertyTypeAndName(kvp.Key, kvp.Value);
-                builder.Append("        public ").Append(declaration).AppendLine(" { get; init; }");
+                builder.Append("        public ").Append(declaration).AppendLine(" { get; set; } = default!;");
             }
             return builder.ToString();
         }
@@ -72,7 +70,7 @@ namespace AppSettings
                 return new List<string>();
             }
 
-            return values.Select(x => StringToValidRecordName(x.Key.Trim())).ToList();
+            return values.Select(x => StringToValidTypeName(x.Key.Trim())).ToList();
         }
 
 
@@ -99,6 +97,7 @@ namespace AppSettings
 
         public void Execute(GeneratorExecutionContext context)
         {
+            var addedSources = new List<string>();
             foreach (var file in context.AdditionalFiles)
             {
                 if (!Path.GetExtension(file.Path).Equals(".json", StringComparison.OrdinalIgnoreCase))
@@ -106,26 +105,28 @@ namespace AppSettings
                     continue;
                 }
                 var json = file.GetText()?.ToString();
-                var values = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                var values = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
                 if (values == null)
                 {
                     continue;
                 }
 
-                foreach (var recordName in ExtractTopLevelPropertyNames(values))
+
+                foreach (var className in ExtractTopLevelPropertyNames(values))
                 {
-                    var source = GenerateRecordSource(recordName, values);
+                    if (addedSources.Contains(className)) continue;
+                    var source = GenerateAppSettingSource(className, values, context.Compilation.AssemblyName);
                     if (source == null)
                     {
                         continue;
                     }
-
-                    context.AddSource(recordName, SourceText.From(source, Encoding.UTF8));
+                    context.AddSource(className, SourceText.From(source, Encoding.UTF8));
+                    addedSources.Add(className);
                 }
             }
         }
 
-        internal static string StringToValidRecordName(string s)
+        internal static string StringToValidTypeName(string s)
         {
             s = s.Trim();
             s = char.IsLetter(s[0]) ? char.ToUpper(s[0]) + s.Substring(1) : s;

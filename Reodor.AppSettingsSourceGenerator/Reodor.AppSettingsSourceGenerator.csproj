@@ -2,9 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<LangVersion>preview</LangVersion>
+		<LangVersion>10.0</LangVersion>
 		<Authors>frodehus</Authors>
-		<Version>0.2.3</Version>
+		<Version>0.2.9</Version>
 		<Description>Source generator for creating C# records based on the appsettings.json found in the project.</Description>
 		<PackageProjectUrl>https://github.com/FrodeHus/AppSettingsSourceGenerator</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/FrodeHus/AppSettingsSourceGenerator</RepositoryUrl>
@@ -14,7 +14,7 @@
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\Generated</CompilerGeneratedFilesOutputPath>
 		<Copyright>Copyright 2021 - Frode Hus</Copyright>
-		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+		<!--<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>-->
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -24,16 +24,19 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="System.Text.Json" Version="6.0.0" />
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="Reodor.AppSettingsSourceGenerator.props" Pack="true" PackagePath="build" Visible="true" />
 	</ItemGroup>
-	<Target Name="GetDependencyTargetPaths">
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
+	<Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
 		<ItemGroup>
-			<TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="@(ResolvedCompileFileDefinitions)" IncludeRuntimeDependency="false" />
 		</ItemGroup>
 	</Target>
 </Project>
