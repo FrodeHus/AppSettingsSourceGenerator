@@ -4,7 +4,7 @@ Source generator that turns appsettings.json into ready to be used classes for d
 ## Installation
 
 Use this [NuGet package](https://www.nuget.org/packages/Reodor.AppSettingsSourceGenerator/).
-Install using, for example, `dotnet add package Reodor.AppSettingsSourceGenerator --version 0.2.16`
+Install using, for example, `dotnet add package Reodor.AppSettingsSourceGenerator --version 0.2.17`
 
 _Note_  
 Due to how analyzers need to be packaged when referencing external NuGet packages, your analyzer list in Visual Studio may appear cluttered with other libraries than just analyzers.
