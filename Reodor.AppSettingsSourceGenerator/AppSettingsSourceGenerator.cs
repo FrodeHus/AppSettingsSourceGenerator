@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,8 +36,7 @@ namespace AppSettings
                 throw new ArgumentException($"No values found in given dictionary for {recordName}", nameof(values));
             }
 
-            var propValues = values[recordName] as JObject;
-            if (propValues == null)
+            if (values[recordName] is not JObject propValues)
             {
                 return null;
             }
@@ -136,12 +136,12 @@ namespace AppSettings
 
         public void Initialize(GeneratorInitializationContext context)
         {
-            //#if DEBUG
-            //            if (!Debugger.IsAttached)
-            //            {
-            //                Debugger.Launch();
-            //            }
-            //#endif
+#if DEBUG
+            if (!Debugger.IsAttached)
+            {
+                Debugger.Launch();
+            }
+#endif
         }
     }
 }
